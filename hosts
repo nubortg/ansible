@@ -1,0 +1,2 @@
+[all]
+vpn ansible_host=10.10.10.10
