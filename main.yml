@@ -7,7 +7,7 @@
 #    ansible_ssh_pass: ans
   tasks:
     - expect:
-        command: "ssh root@{{ host_name }}"
+        command: "ssh root@{{ ansible_host }}"
         timeout: 2
         register: result
         ignore_unreachable: True
