@@ -6,20 +6,30 @@
 #    ansible_ssh_user: ans
 #    ansible_ssh_pass: ans
   tasks:
-    - name: Проверка доступности хостов
-      ping:
-      ignore_unreachable: True
-      ignore_errors: True
-      register: ping_with_key_result
-
+    - expect:
+        command: "ssh root@{{ host_name }}"
+        timeout: 2
+        register: result
+        ignore_unreachable: True
+        ignore_errors: True
     - debug:
-        #msg: "Testing ssh_connection_test.stderr"
-        var: ping_with_key_result
+        var: result
 
-    - name: Проверка доступности хостов
-      vars:
-        ansible_ssh_user: ans
-        ansible_ssh_pass: ans
-      ping:
-      when: ping_with_key_result.unreachable
+
+
+#      ping:
+#      ignore_unreachable: True
+#      ignore_errors: True
+#      register: ping_with_key_result
+#
+#    - debug:
+#        #msg: "Testing ssh_connection_test.stderr"
+#        var: ping_with_key_result
+#
+#    - name: Проверка доступности хостов
+#      vars:
+#        ansible_ssh_user: ans
+#        ansible_ssh_pass: ans
+#      ping:
+#      when: ping_with_key_result.unreachable
 
