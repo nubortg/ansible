@@ -1,0 +1,25 @@
+---
+- name: Пример плейбука для проверки доступности хостов с помощью модуля ping
+  hosts: all
+  gather_facts: False
+#  vars:
+#    ansible_ssh_user: ans
+#    ansible_ssh_pass: ans
+  tasks:
+    - name: Проверка доступности хостов
+      ping:
+      ignore_unreachable: True
+      ignore_errors: True
+      register: ping_with_key_result
+
+    - debug:
+        #msg: "Testing ssh_connection_test.stderr"
+        var: ping_with_key_result
+
+    - name: Проверка доступности хостов
+      vars:
+        ansible_ssh_user: ans
+        ansible_ssh_pass: ans
+      ping:
+      when: ping_with_key_result.unreachable
+
