@@ -101,11 +101,12 @@
     - name: Пытаемся обновить систему если она Debian или Ubuntu
       block:
 
-        - name:  Update package cache
+        - name:  Update package cache Debian
           apt:
             update_cache: 'yes'
+            cache_valid_time: 3600 # идемпотентненько !!!
 
-        - name: Upgrade packages
+        - name: Upgrade packages Debian
           apt:
             upgrade: 'yes'
 
@@ -115,18 +116,19 @@
             name:
               - docker
               - docker-compose
-            state: present
+            state: present  # идемпотентненько !!!
 
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
     - name: Аналогично для RHEL
       block:
 
-        - name: Update package cache
+        - name: Update package cache RHEL
           yum:
             update_cache: 'yes'
+            cache_valid_time: 3600 # идемпотентненько !!!
 
-        - name: Upgrade packages
+        - name: Upgrade packages RHEL
           yum:
             name: '*'
             state: latest
@@ -140,7 +142,7 @@
 
       when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
-    - name: Есть наш репо?
+    - name: Есть наш репо?   # идемпотентненько !!!
       stat:
         path: /root/wgadproxy
       register: repo_directory
