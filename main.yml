@@ -31,7 +31,7 @@
         - name: debug
           debug:
             var: user_password.user_input
- 
+
         - name: Добавление ключа на хост
           authorized_key:
             user: root
@@ -40,3 +40,23 @@
 
 
       when: ping_with_key_result.unreachable is defined
+
+    - name: Change ssh port
+      pause:
+        prompt: "Меняем ssh port? (yes/no): "
+      register: change_ssh_port_response
+
+    - name: Check user choice
+      set_fact:
+        change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'yes' }}"
+      when: change_ssh_port_response.user_input | lower in ['yes', 'no']
+
+    - name: debug
+      gebug:
+        msg: "{{ ansible_port }} and {{ change_ssh_port_response.user_input }}"
+  
+
+
+
+
+
