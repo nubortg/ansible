@@ -91,7 +91,9 @@
 
       when: change_ssh_port
 
-
+    - name: Должны проверить что за система у нас если debian то гуд
+      debug:
+        msg: "Мы на луне!"
 
 
 
