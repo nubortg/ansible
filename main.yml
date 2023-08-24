@@ -50,7 +50,7 @@
         change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'yes' }}"
       when: change_ssh_port_response.user_input | lower in ['yes', 'no']
 
-    - gebug:
+    - debug:
         msg: "{{ ansible_port }} and {{ change_ssh_port_response.user_input }}"
   
 
