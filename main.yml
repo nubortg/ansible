@@ -48,12 +48,12 @@
 
       when: ping_with_key_result.unreachable is defined
 
-    - name: Change ssh port query A
+    - name: Change ssh port query
       pause:
         prompt: "Меняем ssh port? (y/n)"
       register: change_ssh_port_response
 
-    - name: Check user choice B
+    - name: Check user choice
       set_fact:
         change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'y' }}"
       when: change_ssh_port_response.user_input | lower in ['y', 'n']
@@ -70,14 +70,21 @@
             prompt: "Новый SSH порт: "
           register: new_port_response
 
+        - name: Update SSH Port in sshd_config
+          lineinfile:
+            dest: "/etc/ssh/sshd_config"
+            regexp: "^Port"
+            line: "Port {{ configured_port }}"
+          notify: "Restart sshd"
+
 
         - name: Меняем порт в inventory
           delegate_to: localhost
           replace:
             path: "{{ inventory_file }}"
-            regexp: "(^test.*ansible_port=)\\d+(.*$)"
-            replace: "\\1{{ new_port_response.user_input }}\\2"
-
+            regexp: "(^test.*ansible_port=)\\d+(.*)$"
+            replace: "\\g<1>{{ new_port_response.user_input }}\\2"
+            #backup: True
 
         - debug:
             msg: "{{ inventory_file }} и {{ inventory_hostname }} и {{ ansible_port }}"
@@ -95,7 +102,11 @@
 
 
 
-
+  handlers:
+    - name: Restart sshd
+      service:
+        name: sshd
+        state: restarted
 
 
 
