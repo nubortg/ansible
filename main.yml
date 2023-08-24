@@ -40,19 +40,62 @@
 
       when: ping_with_key_result.unreachable is defined
 
-    - name: Change ssh port
+    - name: Change ssh port query
       pause:
-        prompt: "Меняем ssh port? (yes/no): "
+        prompt: "Меняем ssh port? (y/n)"
       register: change_ssh_port_response
 
     - name: Check user choice
       set_fact:
-        change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'yes' }}"
-      when: change_ssh_port_response.user_input | lower in ['yes', 'no']
+        change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'y' }}"
+      when: change_ssh_port_response.user_input | lower in ['y', 'n']
 
     - debug:
-        msg: "{{ ansible_port }} and {{ change_ssh_port_response.user_input }}"
-  
+        #msg: "{{ ansible_port }} and {{ change_ssh_port_response.user_input }}"
+      when: change_ssh_port
+
+    - name: Change SSH port
+      block:
+
+        - name: Enter new SSH port      
+          pause:
+            prompt: "Новый SSH порт: "
+          register: new_port_response
+
+        - name: Change SSH port in inventory
+          lineinfile:
+            path: "{{ inventory_path }}"
+            regexp: '^{{ inventory_hostname }} {{ ssh_port_variable }}='
+            line: "{{ inventory_hostname }} {{ ssh_port_variable }}={{ new_port_response.user_input }}"
+
+      when: change_ssh_port
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
