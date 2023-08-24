@@ -5,11 +5,11 @@
 #  vars:
 #    ansible_ssh_user: ans
 #    ansible_ssh_pass: ans
-  vars_prompt:
-    - name: connect_ssh_port
-      prompt: "Укажите SSH порт для подключения"
-      default: "22"
-      private: false
+#  vars_prompt:
+#    - name: connect_ssh_port
+#      prompt: "Укажите SSH порт для подключения"
+#      default: "22"
+#      private: false
 
 
 
@@ -74,7 +74,7 @@
           lineinfile:
             dest: "/etc/ssh/sshd_config"
             regexp: "^Port"
-            line: "Port {{ configured_port }}"
+            line: "Port {{ new_port_response.user_input }}"
           notify: "Restart sshd"
 
 
