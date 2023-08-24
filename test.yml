@@ -18,7 +18,7 @@
       delegate_to: localhost
       replace:
         path: "{{ inventory_file }}"
-        regexp: '(^test.*ansible_port=)\d+(.*)$'
-        replace: '\g<1>{{ new_port_response.user_input }}\2'
+        regexp: "(^test.*ansible_port=)\\d+(.*)$"
+        replace: "\\g<1>{{ new_port_response.user_input }}\\2"
         backup: True
 
