@@ -28,8 +28,7 @@
           set_fact:
             ansible_ssh_pass: "{{ user_password.user_input }}"
 
-        - name: debug
-          debug:
+        - debug:
             var: user_password.user_input
 
         - name: Добавление ключа на хост
@@ -51,8 +50,7 @@
         change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'yes' }}"
       when: change_ssh_port_response.user_input | lower in ['yes', 'no']
 
-    - name: debug
-      gebug:
+    - gebug:
         msg: "{{ ansible_port }} and {{ change_ssh_port_response.user_input }}"
   
 
