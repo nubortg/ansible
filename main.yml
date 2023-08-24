@@ -140,7 +140,16 @@
 
       when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
+    - name: Есть наш репо?
+      stat:
+        path: /root/wgadproxy
+      register: repo_directory
 
+    - name: Клонируем наш репо
+      ansible.builtin.git:
+        repo: https://github.com/nubortg/wgadproxy.git
+        dest: /root/wgadproxy
+      when: repo_directory
 
 
   handlers:
