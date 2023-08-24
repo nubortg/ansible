@@ -5,6 +5,14 @@
 #  vars:
 #    ansible_ssh_user: ans
 #    ansible_ssh_pass: ans
+  vars_prompt:
+    - name: connect_ssh_port
+      prompt: "Укажите SSH порт для подключения"
+      default: "22"
+      private: false
+
+
+
   tasks:
     - name: Пробуем подключиться с ключом
       ping:
@@ -61,6 +69,19 @@
           pause:
             prompt: "Новый SSH порт: "
           register: new_port_response
+
+
+        - name: Меняем порт в inventory
+          delegate_to: localhost
+          lineinfile:
+            path: "{{ inventory_file }}"
+            regexp: "^({{ inventory_hostname }} ansible_host=.*)( ansible_port=\d+)?( ansible_user=root)?$"
+            line: "\1 ansible_port={{ new_port_response }}\3"
+      
+      when: change_ssh_port and current_port_response.user_input == hostvars[inventory_hostname][ssh_port_variable]
+
+
+
 
 
         - debug:
