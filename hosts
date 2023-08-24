@@ -1,2 +1,2 @@
 [server]
-test ansible_host=192.168.91.129 ansible_port=22 ansible_user=root
+f ansible_user=root

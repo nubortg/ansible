@@ -51,7 +51,7 @@
     - name: Change ssh port query A
       pause:
         prompt: "Меняем ssh port? (y/n)"
-      register: change_ssh_port_response 
+      register: change_ssh_port_response
 
     - name: Check user choice B
       set_fact:
@@ -73,15 +73,10 @@
 
         - name: Меняем порт в inventory
           delegate_to: localhost
-          lineinfile:
+          replace:
             path: "{{ inventory_file }}"
-            regexp: "^({{ inventory_hostname }} ansible_host=.*)( ansible_port=\d+)?( ansible_user=root)?$"
-            line: "\1 ansible_port={{ new_port_response }}\3"
-      
-      when: change_ssh_port and current_port_response.user_input == hostvars[inventory_hostname][ssh_port_variable]
-
-
-
+            regexp: "(^test.*ansible_port=)\\d+(.*$)"
+            replace: "\\1{{ new_port_response.user_input }}\\2"
 
 
         - debug:
