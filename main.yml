@@ -1,7 +1,7 @@
 ---
 - name: Установка VPN
   hosts: all
-  gather_facts: False
+  gather_facts: True
 #  vars:
 #    ansible_ssh_user: ans
 #    ansible_ssh_pass: ans
@@ -95,9 +95,18 @@
       debug:
         msg: "Мы на луне!"
 
+    - name: Пытаемся обновить систему если она Debian или Ubuntu
+      block:
 
+        - name:  Update package cache
+          ansible.builtin.apt:
+            update_cache: yes
 
+        - name: Upgrade packages
+          ansible.builtin.apt:
+            upgrade: yes
 
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 
 
