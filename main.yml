@@ -14,15 +14,11 @@
 
 
   tasks:
-    - name: Пробуем подключиться с ключом
-      ping:
+    - name: Пробуем подключиться с ключом за одно соберем факты
+      ansible.builtin.setup:
       ignore_unreachable: True
       ignore_errors: True
       register: ping_with_key_result
-
-    - debug:
-        #msg: "Testing ssh_connection_test.stderr"
-        var: ping_with_key_result
 
     - name: Копируем ключи на хост
       block:
@@ -35,9 +31,6 @@
         - name: Обновляем факты
           set_fact:
             ansible_ssh_pass: "{{ user_password.user_input }}"
-
-        - debug:
-            var: user_password.user_input
 
         - name: Добавление ключа на хост
           authorized_key:
@@ -58,10 +51,6 @@
         change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'y' }}"
       when: change_ssh_port_response.user_input | lower in ['y', 'n']
 
-    - debug:
-        #msg: "{{ ansible_port }} and {{ change_ssh_port_response.user_input }}"
-      when: change_ssh_port
-
     - name: Change SSH port
       block:
 
@@ -77,7 +66,6 @@
             line: "Port {{ new_port_response.user_input }}"
           notify: "Restart sshd"
 
-
         - name: Меняем порт в inventory
           delegate_to: localhost
           replace:
@@ -86,17 +74,7 @@
             replace: "\\g<1>{{ new_port_response.user_input }}\\2"
             #backup: True
 
-        - debug:
-            msg: "{{ inventory_file }} и {{ inventory_hostname }} и {{ ansible_port }}"
-
       when: change_ssh_port
-
-    - name: Должны проверить что за система у нас если debian то гуд
-      debug:
-        msg: "Мы на луне!"
-
-    - name: Сбор фактов о системе
-      ansible.builtin.setup:
 
     - name: Пытаемся обновить систему если она Debian или Ubuntu
       block:
