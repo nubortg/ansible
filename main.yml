@@ -36,11 +36,16 @@
         - name: Сбор фактов о системе
           ansible.builtin.setup:
 
+        - debug:
+            msg: "{{ ansible_distribution }}"
+
+
         - name: Добавление ключа на хост Debian
           authorized_key:
             user: root
             key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
             state: present
+
           when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
         - name: Добавление ключа на хост CentOS
@@ -138,7 +143,7 @@
             state: latest
 
         - name: Установка Docker
-          apt:
+          yum:
             name:
               - docker
               - docker-compose

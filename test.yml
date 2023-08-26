@@ -1,24 +1,24 @@
 ---
 - name: Установка VPN
   hosts: all
-  gather_facts: True
+  gather_facts: False
 #  vars:
 #    ansible_ssh_user: ans
 #    ansible_ssh_pass: ans
   tasks:
-    - name: Enter new SSH port
+    - name: Ввод пароля пользователя
       pause:
-        prompt: "Новый SSH порт: "
-      register: new_port_response
+        prompt: "Пароль"
+        echo: yes
+      register: user_password
 
-    - debug:
-        msg: "{{ new_port_response.user_input }}"
+    - name: Обновляем факты
+      set_fact:
+        ansible_ssh_pass: "{{ user_password.user_input }}"
 
-    - name: Меняем порт в inventory
-      delegate_to: localhost
-      replace:
-        path: "{{ inventory_file }}"
-        regexp: "(^test.*ansible_port=)\\d+(.*)$"
-        replace: "\\g<1>{{ new_port_response.user_input }}\\2"
-        backup: True
+#    - name: Сбор фактов о системе
+#      ansible.builtin.setup:
+
+    - name: ping
+      ping:
 
