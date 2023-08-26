@@ -36,39 +36,16 @@
         - name: Сбор фактов о системе
           ansible.builtin.setup:
 
-        - debug:
-            msg: "{{ ansible_distribution }}"
-
+        - name: Проверка операционной системы
+          fail:
+            msg: "Поддерживаются только Debian и Ubuntu"
+          when: not (ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu')
 
         - name: Добавление ключа на хост Debian
           authorized_key:
             user: root
             key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
             state: present
-
-          when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-
-        - name: Добавление ключа на хост CentOS
-          block:
-
-            - name: Создание директори .ssh в CentOS
-              file:
-                path: ~/.ssh
-                state: directory
-                mode: '0700'
-
-            - name: Создаем файл authorized_keys
-              lineinfile:
-                path: ~/.ssh/authorized_keys
-                line: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
-                create: yes
-
-            - name: Set correct permissions for authorized_keys
-              file:
-                path: ~/.ssh/authorized_keys
-                mode: '0600'
-
-          when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
       when: ping_with_key_result.unreachable is defined
 
@@ -126,30 +103,6 @@
               - docker
               - docker-compose
             state: present  # идемпотентненько !!!
-
-      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-
-    - name: Аналогично для RHEL
-      block:
-
-        - name: Update package cache RHEL
-          yum:
-            update_cache: 'yes'
-            #cache_valid_time: 3600 # НЕ идемпотентненько !!!!!!1111одинодинодин
-
-        - name: Upgrade packages RHEL
-          yum:
-            name: '*'
-            state: latest
-
-        - name: Установка Docker
-          yum:
-            name:
-              - docker
-              - docker-compose
-            state: present
-
-      when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
     - name: Есть наш репо?   # идемпотентненько !!!
       stat:
