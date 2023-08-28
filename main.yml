@@ -4,7 +4,7 @@
   gather_facts: False
 
   tasks:
-    - name: Пробуем подключиться с ключом за одно соберем факты
+    - name: Пробуем подключиться с ключом
       ansible.builtin.setup:
       ignore_unreachable: True
       ignore_errors: True
@@ -25,8 +25,6 @@
 
         - name: Запрос версии OS
           ansible.builtin.setup:
-            filter:
-              - 'distribution'
 
         - name: Проверка операционной системы
           fail:
@@ -116,10 +114,21 @@
         path: /root/wgadproxy/nginx/www/sites.list
         mode: '0644'
 
-    - name: Copy peer1.conf to remote server
+    - name: Конфиг клиента
+      block:
+        - name: Читаем конфиг peer1.conf
+          command: cat peer1.conf chdir=/root/wgadproxy/wireguard/peer1
+          register: command_output
+
+        - name: Конфиг пользователя
+          debig:
+            msg: "{{ command_output.stdout_lines }}"
+
+
+    - name: Копируем peer1.conf на сервер
       fetch:
         src: /root/wgadproxy/wireguard/peer1/peer1.conf
-        dest: "{{ inventory_dir }}/peer1.conf"
+        dest: "{{ inventory_dir }}"
 
     - name: Добавляем правило брандмауэра для нового порта SSH
       ufw:
