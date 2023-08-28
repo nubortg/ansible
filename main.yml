@@ -74,6 +74,14 @@
 
       when: change_ssh_port
 
+    - name: Disable SSH password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        backup: yes
+      notify: "Restart sshd"
+
     - name: Пытаемся обновить систему если она Debian или Ubuntu
       block:
 
@@ -113,17 +121,6 @@
       ansible.builtin.file:
         path: /root/wgadproxy/nginx/www/sites.list
         mode: '0644'
-
-    - name: Конфиг клиента
-      block:
-        - name: Читаем конфиг peer1.conf
-          command: cat peer1.conf chdir=/root/wgadproxy/wireguard/peer1
-          register: command_output
-
-        - name: Конфиг пользователя
-          debig:
-            msg: "{{ command_output.stdout_lines }}"
-
 
     - name: Копируем peer1.conf на сервер
       fetch:
