@@ -2,16 +2,6 @@
 - name: Установка VPN
   hosts: all
   gather_facts: False
-#  vars:
-#    ansible_ssh_user: ans
-#    ansible_ssh_pass: ans
-#  vars_prompt:
-#    - name: connect_ssh_port
-#      prompt: "Укажите SSH порт для подключения"
-#      default: "22"
-#      private: false
-
-
 
   tasks:
     - name: Пробуем подключиться с ключом за одно соберем факты
@@ -29,12 +19,14 @@
             echo: yes
           register: user_password
 
-        - name: Обновляем факты
+        - name: Обновляем пароль
           set_fact:
             ansible_ssh_pass: "{{ user_password.user_input }}"
 
-        - name: Сбор фактов о системе
+        - name: Запрос версии OS
           ansible.builtin.setup:
+            filter:
+              - 'distribution'
 
         - name: Проверка операционной системы
           fail:
@@ -49,25 +41,25 @@
 
       when: ping_with_key_result.unreachable is defined
 
-    - name: Change ssh port query
+    - name: Смена порта SSH
       pause:
         prompt: "Меняем ssh port? (y/n)"
       register: change_ssh_port_response
 
-    - name: Check user choice
+    - name: Проверка выбора пользователя
       set_fact:
         change_ssh_port: "{{ change_ssh_port_response.user_input | lower == 'y' }}"
       when: change_ssh_port_response.user_input | lower in ['y', 'n']
 
-    - name: Change SSH port
+    - name: Смена порта SSH
       block:
 
-        - name: Enter new SSH port
+        - name: Запрос нового SSH порта
           pause:
             prompt: "Новый SSH порт: "
           register: new_port_response
 
-        - name: Update SSH Port in sshd_config
+        - name:  Обновление SSH в конфиге.
           lineinfile:
             dest: "/etc/ssh/sshd_config"
             regexp: "^Port"
@@ -87,17 +79,16 @@
     - name: Пытаемся обновить систему если она Debian или Ubuntu
       block:
 
-        - name:  Update package cache Debian
+        - name: Обновление кеша
           apt:
             update_cache: 'yes'
             cache_valid_time: 3600 # идемпотентненько !!!
 
-        - name: Upgrade packages Debian
+        - name: Обновление пакетов
           apt:
             upgrade: 'yes'
 
-
-        - name: Установка Docker
+        - name: Установка Docker, Docker-Compose, Ufw
           apt:
             name:
               - docker
@@ -105,18 +96,18 @@
               - ufw
             state: present  # идемпотентненько !!!
 
-    - name: Есть наш репо?   # идемпотентненько !!!
+    - name: Проверка существования директории   # идемпотентненько !!!
       stat:
         path: /root/wgadproxy
       register: repo_directory
 
-    - name: Клонируем наш репо
+    - name: Клонирование репозитория, если не существует
       ansible.builtin.git:
         repo: https://github.com/nubortg/wgadproxy.git
         dest: /root/wgadproxy
       when: not repo_directory.stat.exists
 
-    - name: Run vpn
+    - name: Запускаем приложение
       docker_compose:
         project_src: /root/wgadproxy
 
@@ -130,33 +121,26 @@
         src: /root/wgadproxy/wireguard/peer1/peer1.conf
         dest: "{{ inventory_dir }}/peer1.conf"
 
-    - debug:
-        msg: "{{ ansible_port }} и {{ new_port_response.user_input }}"
-      when: change_ssh_port
-
-    - name: Allow SSH новый port
+    - name: Добавляем правило брандмауэра для нового порта SSH
       ufw:
         rule: allow
         port: "{{ new_port_response.user_input }}"
       when: change_ssh_port
 
-
-    - name: Remove old ssh port  
+    - name: Удаляем правило брандмауэра для старого порта SSH
       ufw:
         rule: allow
         port: '{{ ansible_port | string }}'
         delete: True
       when: change_ssh_port
 
-
-    - name: Allow WireGuard (port 51820)
+    - name: Добавляем правило брандмауэра для порта Wireguard (port 51820)
       ufw:
         rule: allow
         port: '51820'
         proto: udp
 
-
-    - name: Enable UFW
+    - name: Активация UFW
       ufw:
         state: enabled
 
